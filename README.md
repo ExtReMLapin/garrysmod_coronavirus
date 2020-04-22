@@ -1,8 +1,4 @@
 # garrysmod_coronavirus
 coronavirus on gmod, based on user nationality and game language
 
-
-reupload since other one was censored by github with the following reason : 
-
-* Github staff got a thin skin and gets offended easily
-* I didn't correctly erase some commits
+You need to configure the nationality and the game language detection yourself (in `corona_virus/sh_virus.lua`) as the github policy doesn't allow me to do so
