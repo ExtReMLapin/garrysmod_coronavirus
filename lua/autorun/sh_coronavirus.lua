@@ -1,2 +1,2 @@
-AddCSLuaFile("corona_virus/sh_chinese.lua")
-include("corona_virus/sh_chinese.lua")
+AddCSLuaFile("corona_virus/sh_virus.lua")
+include("corona_virus/sh_virus.lua")

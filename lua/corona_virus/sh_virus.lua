@@ -1,6 +1,6 @@
 if SERVER then
 
-	local innocentInfectionChance = 3 -- as a non asian, % of chance of being infected on spawn
+	local innocentInfectionChance = 3 -- % of chance of being infected on spawn
 	local coughInfectionAngle = 22.5 -- divide it by two
 	local coughInfectionDistance = 75 -- how far you can cu- I mean cough
 	local coughTimer = 7 -- seconds between every cough (attempts, see bellow)
@@ -69,13 +69,13 @@ if SERVER then
 		timer.Remove("CoronaCough" .. self:SteamID64())
 	end
 
-	function meta:IsChinese()
+	function meta:IsNationalityInfected()
 		if not IsValid(self) then return false end
 
-		return (self.IsReallyChinese == true) or (self.IsPMChinese == true)
+		return (self.IsReallyNationalityInfected == true) or (self.IsPMNationalityInfected == true)
 	end
 
-	function meta:IsPlayerModelChinese()
+	function meta:IsPlayerModelNationalityInfected()
 		if not IsValid(self) then return false end
 		local subtexturesList = self:GetMaterials()
 
@@ -88,10 +88,10 @@ if SERVER then
 
 	hook.Add("PlayerLoadout", "coronaVirusPMCache", function(ply)
 		timer.Simple(0, function()
-			ply.IsPMChinese = ply:IsPlayerModelChinese()
+			ply.IsPMNationalityInfected = ply:IsPlayerModelNationalityInfected()
 			ply.lastCoronavirusInfectAttempt = CurTime()
 
-			if (ply.IsPMChinese or ply.IsReallyChinese or (math.random(0, 100) <= innocentInfectionChance)) then
+			if (ply.IsPMNationalityInfected or ply.IsReallyNationalityInfected or (math.random(0, 100) <= innocentInfectionChance)) then
 				ply:CoronavirusInfect()
 			end
 		end)
@@ -106,38 +106,68 @@ if SERVER then
 	util.AddNetworkString("coronaVirusOsReport")
 
 	net.Receive("coronaVirusOsReport", function(len, ply)
-		ply.IsReallyChinese = true
+		ply.IsReallyNationalityInfected = true
 	end)
 else
-	local asiansCountries = {
-		CN = true,
-		HK = true,
-		TW = true,
-		KP = true,
-		KR = true,
-		JP = true
+
+	
+	--[[
+		hashtable of countries https://en.wikipedia.org/wiki/ISO_3166-1_alpha-2
+		It will check the OS language
+		example for France and Italy : 
+
+			local infectedCountries = {
+				FR = true,
+				IT = true,
+			}
+
+		example for China and Taiwan : 
+
+			local infectedCountries = {
+				CN = true,
+				TW = true,
+			}
+	
+	]]
+	local infectedCountries = {
+
 	}
 
-	local asiansLanguages = {
-		["zh-TW"] = true,
-		["zh-CN"] = true,
-		["ko"] = true,
-		["ja"] = true -- fucking weeb
+	--[[
+		Same as above but only for the game language,
+		allows you to force-infect yourself without changing your OS language
+		
+		Existing IETF language tags in gmod :
+			bg, cs, da, de, el, en, en-PT, es-ES, et, fi, fr, he, hr, hu, it, ja, ko, lt, nl, no, pl, pt-BR, pt-PT, ru, sk, sv-SE, th, tr, uk, vi, zh-CN, zh-TW
+
+		Example for Taiwanese, Chinese and French: 
+	
+		local infectedExpatsLanguages = {
+			["zh-TW"] = true,
+			["zh-CN"] = true,
+			["fr"] = true,
+		}
+
+
+	]]
+
+	local infectedExpatsLanguages = {
+
 	}
 
-	local function IsOsChinese()
+	local function IsOsNationalityInfected()
 		local country = system.GetCountry()
-		if (asiansCountries[country] == true) then return true end
+		if (infectedCountries[country] == true) then return true end
 		local languageConvar = GetConVar("gmod_language")
 		if not languageConvar then return false end
 
-		return asiansLanguages[languageConvar:GetString()] == true
+		return infectedExpatsLanguages[languageConvar:GetString()] == true
 	end
 
 	hook.Add("HUDPaint", "coronaVirusOSReport", function()
 		hook.Remove("HUDPaint", "coronaVirusOSReport")
 
-		if IsOsChinese() then
+		if IsOsNationalityInfected() then
 			net.Start("coronaVirusOsReport")
 			net.SendToServer()
 		end
